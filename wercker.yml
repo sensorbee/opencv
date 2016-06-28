@@ -1,0 +1,23 @@
+box: suma/opencv-dev-sensorbee-go1.6
+build:
+  steps:
+    - wercker/setup-go-workspace:
+        package-dir: gopkg.in/sensorbee/opencv.v0
+    - script:
+        name: go version
+        code: |
+          go version
+          sensorbee --version
+    - script:
+        name: Check code style
+        code: |
+          golint ./...
+    - script:
+        name: Install import packages and build
+        code: |
+          go get -t -d -v ./...
+          go build -v ./...
+    - script:
+        name: Run test
+        code: |
+          go test -v ./...
