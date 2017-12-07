@@ -147,11 +147,8 @@ func (r *RawData) ConvertToDataMap() data.Map {
 	}
 }
 
-// ToJpegData convert JPGE format image bytes.
-func (r *RawData) ToJpegData(quality int) ([]byte, error) {
-	if r.Format == TypeJPEG {
-		return r.Data, nil
-	}
+// ToImage converts to image.Image
+func (r *RawData) ToImage() (image.Image, error) {
 	// BGR to RGB
 	rgba := image.NewRGBA(image.Rect(0, 0, r.Width, r.Height))
 	if r.Format == TypeCVMAT {
@@ -169,9 +166,21 @@ func (r *RawData) ToJpegData(quality int) ([]byte, error) {
 			rgba.Pix[i+3] = r.Data[j+3]
 		}
 	} else {
-		return []byte{}, fmt.Errorf("'%v' cannot convert to JPEG", r.Format)
+		return nil, fmt.Errorf("'%v' cannot convert to image", r.Format)
 	}
-	w := bytes.NewBuffer([]byte{})
-	err := jpeg.Encode(w, rgba, &jpeg.Options{Quality: quality})
-	return w.Bytes(), err
+	return rgba, nil
+}
+
+// ToJpegData convert JPGE format image bytes.
+func (r *RawData) ToJpegData(quality int) ([]byte, error) {
+	if r.Format == TypeJPEG {
+		return r.Data, nil
+	}
+	if rgba, err := r.ToImage(); err != nil {
+		return []byte{}, err
+	} else {
+		w := bytes.NewBuffer([]byte{})
+		err := jpeg.Encode(w, rgba, &jpeg.Options{Quality: quality})
+		return w.Bytes(), err
+	}
 }
