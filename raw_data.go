@@ -3,10 +3,11 @@ package opencv
 import (
 	"bytes"
 	"fmt"
-	"gopkg.in/sensorbee/opencv.v0/bridge"
-	"gopkg.in/sensorbee/sensorbee.v0/data"
 	"image"
 	"image/jpeg"
+
+	"gopkg.in/sensorbee/opencv.v0/bridge"
+	"gopkg.in/sensorbee/sensorbee.v0/data"
 )
 
 var (
@@ -176,11 +177,12 @@ func (r *RawData) ToJpegData(quality int) ([]byte, error) {
 	if r.Format == TypeJPEG {
 		return r.Data, nil
 	}
-	if rgba, err := r.ToImage(); err != nil {
+	rgba, err := r.ToImage()
+	if err != nil {
 		return []byte{}, err
-	} else {
-		w := bytes.NewBuffer([]byte{})
-		err := jpeg.Encode(w, rgba, &jpeg.Options{Quality: quality})
-		return w.Bytes(), err
 	}
+
+	w := bytes.NewBuffer([]byte{})
+	err = jpeg.Encode(w, rgba, &jpeg.Options{Quality: quality})
+	return w.Bytes(), err
 }
